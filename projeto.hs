@@ -71,7 +71,7 @@ data Model = Model
 initial :: (Model, Cmd SDLEngine Action)
 initial =
   ( Model
-      { flapperPos   = V2 0 0
+      { flapperPos   = V2 1 1
       , flapperVel   = V2 0 0
       , playerStatus = Waiting
       , obstacles    = []
@@ -159,20 +159,10 @@ touchingObs model@Model { .. } =
         V2 tx ty = obsTopLeft
         V2 bx by = obsBottomRight
 
--- | Is our flapper touching the lava at the bottom of the screen?
-inLava :: Model -> Bool
-inLava Model { .. } =
-  y + fh  / 2 >= h / 2 - lavaHeight
-
-  where
-    V2 _ fh = flapperDims
-    V2 x y = flapperPos
-    V2 w h = fromIntegral <$> windowDims
-
 -- | Should our flapper die? Only checks if they should -
 -- DOES NOT transition the player status to dead.
 shouldDie :: Model -> Bool
-shouldDie model = inLava model || touchingObs model
+shouldDie model = touchingObs model
 
 update :: Model -> Action -> (Model, Cmd SDLEngine Action)
 update model@Model { .. } Pause
@@ -411,8 +401,6 @@ view assets model@Model { .. } = Graphics2D $
         [ move (flapperPos - flapperDims/2) flapper
         , group $ map structure $ relevantObs model
         ]
-
-    , lava
     , overlay playerStatus model
     ]
 
@@ -431,7 +419,6 @@ view assets model@Model { .. } = Graphics2D $
     flapper = image flapperDims (assets M.! flapperSprite)
       where V2 _ dy = flapperVel
     backdrop = filled (rgb 0.13 0.13 0.13) $ rect dims
-    lava = move (V2 0 (h / 2 - lavaHeight / 2)) $ filled (rgb 0.72 0.11 0.11) $ rect $ V2 w lavaHeight
     structure NoObstacle = blank
     structure Obstacle { .. } =
       move (V2 ((tx + bx) / 2) ((ty + by) / 2)) $ filled (rgb 0.38 0.49 0.55) $ rect $ V2 (bx - tx) (by - ty)
