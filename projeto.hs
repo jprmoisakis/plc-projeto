@@ -174,9 +174,12 @@ update model@Model { .. } (Animate dt) =
   if playerStatus `notElem` [Playing, Dead] then (model, Cmd.none)
   else
     ( model
-      { flapperPos   = if y < -hh
-                       then V2 x (-hh)
-                       else pos
+      { flapperPos   = if y > hh
+                       then V2 x (hh)
+                       else 
+                          if y < (-hh)
+                          then V2 x (-hh)
+                          else pos
       , flapperVel   = vel
       , playerStatus = if dead
                        then Dead
